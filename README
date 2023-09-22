@@ -1,0 +1,175 @@
+# Structuri de date şi algoritmi - Tema 1
+
+Student: Andronache Madalina-Georgiana
+Grupa: 312CC
+
+Urmatorul fisier contine informatii despre rezolvarea problemei propusa in 
+tema 1 de la SDA.
+
+Cea mai mare provocare intalnita a fost rezolvarea corecta si cat mai eficienta
+a problemei propuse intr-un timp cat mai scurt. Aceasta tema a fost rezolvata
+pe parcursul a 5 zile: in total am lucrat la aceasta tema 19 h, dintre care 3 h
+fiind necesare pentru scrierea fisierului README, iar restul pentru codare si 
+testarea problemei. In viitor, imi doresc rezolvarea mai rapida a cerintelor. 
+
+Cuprins:
+1. Operatii de tip UPDATE
+2. Operatii de tip QUERY
+3. Operatii de tip UNDO / REDO
+4. Operatia EXECUTE
+5. Citirea datelor
+
+# 1. Operatii de tip UPDATE
+
+Pentru intelegerea operatiilor de tip UPDATE, este important de specificat 
+ca am considerat structura unui nod din lista dubla inlantuita urmatoarea: 
+campul "data" memoreaza un caracter, in timp ce campurile "next" si "prev", 
+reprezinta adresa urmatorului nod din lista, respectiv a nodului aflat inaintea
+nodului actual. Structura list folosita pentru memorarea "benzii" si a 
+"degetului" are 2 campuri: "head" memoreaza adresa elementului santinela si 
+"current" adresa nodului curent, respectiv "degetul".
+
+* Pentru operatiile de "MOVE_LEFT" sau "MOVE_RIGHT" am creat doua functii 
+nod *move_left(nod *current, nod *head), respectiv 
+nod *move_right(nod *current), care primesc ca argument adresa nodului curent 
+din lista dublu inlantuita, semnificand chiar pozitia degetului. Prima functie 
+returneaza adresa nodului anterior, iar functia move_right returneaza adresa 
+nodului urmator, daca acesta exista. In caz contar se creaza un nod nou care 
+este adaugat la finalul listei si memoreaza caracterul '#' in campul "data" 
+(al nodului). La final se returneaza adresa acestui nou nod creat.
+
+* Pentru operatia "WRITE C" avem functia void write(nod *current, char c), care
+actualizeaza campul "data" al nodului p cu caracterul c.
+
+* Pentru operatiile de "MOVE_LEFT_CHAR C" sau "MOVE_RIGHT_CHAR C" am creat
+doua functii nod *move_left_char(nod *current, nod *head, char c, FILE *fout) 
+si nod *move_right_char(nod *current, char c). In functia move_left_char 
+pornind de la nodul "current", cautam la stanga lui, primul nod care are in 
+campul "data" caracterul c. Daca acesta este gasit, functia ii va returna 
+adresa, altfel se va afisa in fisierul fout mesajul "ERROR" si adresa returnata
+va fi chiar cea a nodului initial dat ca paramentru, current. In cazul 
+operatiei de "MOVE_RIGHT_CHAR C", se cauta la dreapta nodului primit ca 
+parametru, primul nod care are in campul "data" caracterul c. Daca acesta este 
+gasit, functia va returna adresa acestuia, altfel se va crea un nou nod care 
+este adaugat la finalul listei si care va memora in campul "data" caracterul 
+'#'. Adresa acestui nou nod creat va fi returnata.
+
+* Ultimele doua operatii de tip update, "INSERT_LEFT C" si "INSERT_RIGHT C"
+au atribuite functiile nod 
+*insert_left(nod **current, nod *head, char c, FILE *fout), respectiv
+nod *insert_right(nod **current, char c). In cazul operatiei de "INSERT_LEFT", 
+procedam in urmatorul fel: daca pozitia degetului indica spre primul nod al 
+listei, deci nu mai exista nici un nod la stanga acestuia, se va afisa in 
+fisierul fout mesajul "ERROR" si se va returna adresa nodului initial primit ca
+si parametru. Altfel, se creaza un nou nod, care va fi introdus in lista intre 
+nodul "current" si nodul aflat la stanga acestuia, folosindu-ne de 
+campul "prev". De asemenea, completam campul "data" al nodului nou creat cu 
+caracterul c, primit ca si parametru in functie si returnam adresa nodului nou 
+creat. Daca vorbim despre functia insert_right: daca nodul primit ca parametru 
+este ultimul din lista, deci nu mai exista un al nod la dreapta lui, creez un 
+nou nod, pe care il atasez la lista si care va avea in campul "data" caracterul
+c. Adresa acestui nou nod va fi returnata in functia insert_right. In caz 
+contrar, sunt in cazul in care nodul (*current) are la dreapta lui inca un nod.
+Voi crea un nou nod care va avea in campul "data" caracterul c si il voi atasa 
+la lista folosindu-ma de adresa nodului (*current) si de campul next al 
+acestuia. Si in acest caz, voi returna adresa nodului nou creat.
+
+# 2. Operatii de tip QUERY
+
+Exista 2 operatii de tip QUERY: "SHOW" si "SHOW_CURRENT".
+
+* Operatia de "SHOW_CURRENT" este implementata cu ajutorul functiei 
+void show_current(nod *current, FILE *fout), care primeste ca argument 
+adresa nodului actual din lista si cu ajutorul campului "data" afiseza 
+in fisierul fout elementul pe care degetul il indica.
+
+* Operatia de "SHOW" este implementata prin functia 
+void show(list *band, FILE *fout), care are doua argumente: band,
+reprezentand chiar banda si fisierul fout in care vom scrie datele de 
+iesire. Pornind de la nodul head, al benzii, parcurgem lista pana cand ajungem 
+pe pozitia nodului current. Acesta, va fi afisat special, intre doua semne de 
+'|'. Continuam parcurgerea listei si afisarea elementelor acesteia pana la 
+finalul ei.
+
+# 3. Operatii de tip UNDO/REDO
+
+Acest tip de operatii au fost implementate folosind cate o stiva, in care 
+elementele memoreaza adresa unui nod din lista dublu inlantuita care desemneaza
+banda din enunt si adresa urmatorului element. Structura de stiva are un camp
+denumit "top" in care vom pastra adresa elementului din varf, respectand 
+principiul "Last in first out" (LIFO).
+
+Am descoperit nevoia de a introduce un element in stiva sau de a scoate un 
+element din stiva. Din acest motiv am creat functiile 
+void push(stack **s, nod *x) si nod *pop(stack **s). Functia push
+creaza un nou nod al stivei si il adauga in varf, din acest motiv, fiind
+nevoie sa modific si campul "top". Functia pop elibereaza memoria din nodul
+care se afla in varful stivei, salvand totusi adresa nodului din campul "data".
+Acesta adresa este ulterior returnata de functie.
+
+In plus, conform enuntului problemei, dupa o operatie de "WRITE" stivele de
+UNDO/REDO trebuie golite. Din acest motiv am creat functia 
+void empty_s(stack **s).
+
+* Stivele UNDO si REDO functioneaza dupa urmatorul principiu: inainte de 
+efectuarea unei operatii de "MOVE_RIGHT" sau "MOVE_LEFT" adresa curenta a 
+nodului din lista (adresa elementului spre care indica degetul) este introdusa 
+in stiva UNDO cu ajutorul functiei push. Atunci cand se cere efectuarea 
+operatiei de UNDO, adresa currenta se retine in stiva de REDO si dupa adresa 
+curenta primeste valoarea returnata de functia pop_s pentru stiva UNDO. Daca 
+in schimb se cere efectuarea operatiei de REDO, adresa curenta, adresa spre 
+care indica degetul, devine egala cu rezultatul returnat de functia pop 
+pentru stiva REDO. In plus, stivele UNDO si REDO sunt golite atunci cand se 
+efectueaza operatia de "WRITE" cu ajutorul functiei empty_s.
+
+# 4. Operatia EXECUTE
+
+Datorita faptului ca operatiile de tip UPDATE nu sunt executate pe masura ce 
+se citesc, este necesara memorarea lor intr-o structura de tip coada. Din 
+acest motiv am definit o structura "queue" care are doua campuri "first" care 
+indica primul element al cozii si "last" care indica ultimul element. 
+Implementarea acestei structuri respecta principiul "First in first out" 
+(FIFO). Coada contine noduri de tip "nod_q" care au urmatoare 3 campuri: 
+"data" in care memorez un numar natural reprezentand o codificare a operatiilor
+de efectuat (de tip UPDATE), un camp "ch" in care memorez un caracter, pentru a
+acoperii situatiile in care operatia are nevoie de un caracter (spre exemplu 
+"INSERT_LEFT C") si adresa urmatorului nod din coada.
+
+Am descoperit nevoia de a introduce un element in coada sau de a scoate un 
+element din coada. Din acest motiv am creat functiile 
+void enqueue(queue **q, int x, char c) si int dequeue(queue **q, char *c). 
+Functia enqueue creaza un nou nod al cozii si il adauga la final, din acest 
+motiv, fiind nevoie sa modific si campul "last". Functia dequeue elibereaza 
+memoria din nodul care se afla la inceputul cozii, salvand totusi valoarea 
+din campul "data" al nodului. Acesta valoare este ulterior returnata de 
+functie.
+
+* Pentru efectuarea operatiei de EXECUTE am creat functia 
+nod *execute(int code, char c, nod **actual, nod *head, stack **undo, 
+FILE *fout), care primeste prin intermediul variabilei code - codul operatiei 
+pe care urmeaza sa fie executate, in c primeste un caracter daca operatia are 
+nevoie de el, adresa nodului curent prin (*actual), adresa nodului santinela 
+a listei dublu inlantuita prin *head, cat si stiva UNDO. Aceasta functie 
+returneaza noua adresa curenta, spre care indica degetul si este apelata doar 
+atunci cand operatia EXECUTE trebuie sa se efectueze.
+
+# 5. Citirea datelor
+
+In functia main se realizeaza citirea datelor din fisierul de intrare
+"tema1.in" in urmatorul mod: prima oara se citeste un numar natural n, 
+reprezentand numarul de operatii citite ulterior. De pe fiecare rand urmator
+al fisierului, se retin in sirul de caractere s datele citite. Ulterior,
+se verifica rezultatul functiei int verify_word(char *s), care returneaza
+1 daca sirul s contine un cuvant compus (un cuvant care contine caracterul 
+' ' - spre exemplu "WRITE X") sau 0 in caz contrar. Daca s este cuvant compus,
+atunci este despartit in operatia de efectuat si caracter folosindu-ne de
+functia char *transform(char *s, char *c). 
+* Ulterior, este verificat tipul operatiei memorate in sirul s, daca aceasta 
+este de tip UPDATE, atunci trebuie sa o introducem in coada, folosindu-ne
+de functia enqueue.
+* Folosindu-ma de functia int command(char *s), verific condificarea uneia 
+dintre operatiile "EXECUTE", "SHOW", "SHOW_CURRENT", "UNDO" sau "REDO". In 
+functie de numarul returnat de catre aceasta functie, voi efectua operatia 
+specifica.
+* In final, se vor elibera resursele folosite: eliberarea memoriei si 
+inchiderea fisierelor de citire si scriere.
